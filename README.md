@@ -79,6 +79,7 @@ typedef struct {
 ////////////////////////////////////////////////////////////////////////////////
 /// \brief item class holds the `type` of the item, the `value`, the property
 /// name as `key` and the address of the next pair as (KV)
+///
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct STF_DICT_ITEM {
   STF_TYPE type;
@@ -88,14 +89,6 @@ typedef struct STF_DICT_ITEM {
 } STF_DICT_ITEM;
 ```
 
+## Documentation
 
-
-
-
-
-
-
-
-
-
-
+For more infos checkout the [Docs](https://github.com/Tommy-LifeLongLearner/STF_cdict/wiki)
