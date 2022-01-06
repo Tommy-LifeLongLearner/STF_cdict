@@ -89,6 +89,20 @@ typedef struct STF_DICT_ITEM {
 } STF_DICT_ITEM;
 ```
 
+## Extend the library with your types
+
+To add custom types you should alter the library following these steps:
+
+1) add the function `_STF_DICT_ITEM_CREATE_YOURTYPE(char *k, YOURTYPE v)`
+2) add a case to print your type in the function `_STF_DICT_ITEM_PRINT`
+3) add a case to copy your type in the function `_STF_DICT_ITEM_COPY(STF_DICT_ITEM *kv)`
+4) add the function `_STF_DICT_ADD_YOURTYPE(STF_DICT *dict, char *k, YOURTYPE v, char *src)`
+5) add the function `_STF_DICT_UPDATE_YOURTYPE(STF_DICT *dict, char *k, YOURTYPE v, char *src)`
+6) add the type match inside the macro `STF_DICT_ITEM_CREATE(k, v)`
+7) add the type match inside the macro `STF_DICT_ADD(dict, k, v)`
+8) add the type match inside the macro `STF_DICT_UPDATE(dict, k, v)`
+9) add your type as an `STF_TYPE` enum item
+
 ## Documentation
 
 For more infos checkout the [Docs](https://github.com/Tommy-LifeLongLearner/STF_cdict/wiki)
