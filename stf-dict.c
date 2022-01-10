@@ -1,6 +1,35 @@
 #ifndef __cplusplus /////////////////////////////////////////////////////////////////////
 #include "stf-dict.h"
 
+void printc(int color, char *output, ...) {    
+  va_list args;
+  va_start(args, output);
+
+  #if defined _WIN32 || defined _WIN64
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    // save the config
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &consoleInfo);
+ 
+    SetConsoleTextAttribute(hConsole, color);
+    vprintf(output, args);
+    // restore the config
+    SetConsoleTextAttribute(hConsole, consoleInfo.wAttributes);
+  #else
+    switch(color) {
+      case 0: printf("\033[30m"); break;
+      case 1: printf("\033[1;33m"); break;
+      case 2: printf("\033[1;31m"); break; 
+      case 3: printf("\033[1;32m"); break; 
+      case 4: printf("\033[1;34m"); break; 
+      case 5: printf("\033[1;37m"); break;
+      default: printf("%s", output); break;
+    }
+    vprintf(output, args);
+  #endif
+  va_end(args);
+}
+
 static STF_DICT_ITEM * _STF_DICT_ITEM_CREATE_PRIMITIVE(char *k, void *nvp, STF_TYPE t) {
   STF_DICT_ITEM *kvNode = malloc(sizeof(STF_DICT_ITEM));
   if(kvNode != NULL) {
@@ -116,7 +145,7 @@ static STF_DICT_ITEM * _STF_DICT_ITEM_CREATE_STRING(char *k, char *s) {
 }
 
 bool _STF_ERROR_UNSUPPORTED_TYPE(STF_DICT *dict, char *k, void *v, char *src) {
-  printf("\nUNSUPPORTED TYPE [%s] in file: %s, line: %d", src, __FILE__, __LINE__);
+  printc(RED, "\nUNSUPPORTED TYPE [%s] in file: %s, line: %d", src, __FILE__, __LINE__);
   exit(1);
 }
 
@@ -124,29 +153,110 @@ static void _STF_DICT_ITEM_PRINT(STF_DICT_ITEM *kv, int level, bool printType) {
   STF_PRINT_REPEAT("  ", level + 1);
   if(kv != NULL) {
     if(kv->value == NULL) {
-      printf("\"%s\": NULL", kv->key);
+      printc(GREEN, "\"%s\": ", kv->key);
+      printc(RED, "NULL");
     }else {
       switch(kv->type) {
-        case STF_TYPE_BOOL: printf("%s\"%s\": %s", printType ? "(BOOL) " : "", kv->key, *((bool *)(kv->value)) ? "true" : "false"); break;
-        case STF_TYPE_UNSIGNED_CHAR: printf("%s\"%s\": '%c'", printType ? "(UNSIGNED_CHAR) " : "", kv->key, *((unsigned char *)(kv->value))); break;
-        case STF_TYPE_SIGNED_CHAR: printf("%s\"%s\": '%c'", printType ? "(SIGNED_CHAR) " : "", kv->key, *((signed char *)(kv->value))); break;
-        case STF_TYPE_UNSIGNED_SHORT_INT: printf("%s\"%s\": %d", printType ? "(UNSIGNED_SHORT_INT) " : "", kv->key, *((unsigned short int *)(kv->value))); break;
-        case STF_TYPE_UNSIGNED_INT: printf("%s\"%s\": %u", printType ? "(UNSIGNED_INT) " : "", kv->key, *((unsigned int *)(kv->value))); break;
-        case STF_TYPE_UNSIGNED_LONG_INT: printf("%s\"%s\": %lu", printType ? "(UNSIGNED_LONG_INT) " : "", kv->key, *((unsigned long int *)(kv->value))); break;
-        case STF_TYPE_UNSIGNED_LONG_LONG_INT: printf("%s\"%s\": %llu", printType ? "(UNSIGNED_LONG_LONG_INT) " : "", kv->key, *((unsigned long long int *)(kv->value))); break;
-        case STF_TYPE_SIGNED_SHORT_INT: printf("%s\"%s\": %d", printType ? "(SIGNED_SHORT_INT) " : "", kv->key, *((signed short int *)(kv->value))); break;
-        case STF_TYPE_SIGNED_INT: printf("%s\"%s\": %d", printType ? "(SIGNED_INT) " : "", kv->key, *((signed int *)(kv->value))); break;
-        case STF_TYPE_SIGNED_LONG_INT: printf("%s\"%s\": %ld", printType ? "(SIGNED_LONG_INT) " : "", kv->key, *((signed long int *)(kv->value))); break;
-        case STF_TYPE_SIGNED_LONG_LONG_INT: printf("%s\"%s\": %lld", printType ? "(SIGNED_LONG_LONG_INT) " : "", kv->key, *((signed long long int *)(kv->value))); break;
-        case STF_TYPE_FLOAT: printf("%s\"%s\": %f", printType ? "(FLOAT) " : "", kv->key, *((float *)(kv->value))); break;
-        case STF_TYPE_DOUBLE: printf("%s\"%s\": %lf", printType ? "(DOUBLE) " : "", kv->key, *((double *)(kv->value))); break;
-        case STF_TYPE_LONG_DOUBLE: printf("%s\"%s\": %Lf", printType ? "(LONG_DOUBLE) " : "", kv->key, *((long double *)(kv->value))); break;
-        case STF_TYPE_STRING: printf("%s\"%s\": \"%s\"", printType ? "(STRING) " : "", kv->key, (char *)(kv->value)); break;
-        case STF_TYPE_DICT: printf("%s\"%s\": ", printType ? "(DICT) " : "", kv->key); STF_DICT_PRINTL((STF_DICT *)(kv->value), level + 1, printType); break;
+        case STF_TYPE_BOOL: {
+          printc(YELLOW, "%s", printType ? "(BOOL) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(RED, "%s", *((bool *)(kv->value)) ? "true" : "false");
+          break;
+        }
+        case STF_TYPE_UNSIGNED_CHAR: {
+          printc(YELLOW, "%s", printType ? "(UNSIGNED_CHAR) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(YELLOW, "'%c'", *((unsigned char *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_SIGNED_CHAR: {
+          printc(YELLOW, "%s", printType ? "(SIGNED_CHAR) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(YELLOW, "'%c'", *((signed char *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_UNSIGNED_SHORT_INT: {
+          printc(YELLOW, "%s", printType ? "(UNSIGNED_SHORT_INT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%d", *((unsigned short int *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_UNSIGNED_INT: {
+          printc(YELLOW, "%s", printType ? "(UNSIGNED_INT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%u", *((unsigned int *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_UNSIGNED_LONG_INT: {
+          printc(YELLOW, "%s", printType ? "(UNSIGNED_LONG_INT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%lu", *((unsigned long int *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_UNSIGNED_LONG_LONG_INT: {
+          printc(YELLOW, "%s", printType ? "(UNSIGNED_LONG_LONG_INT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%llu", *((unsigned long long int *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_SIGNED_SHORT_INT: {
+          printc(YELLOW, "%s", printType ? "(SIGNED_SHORT_INT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%d", *((signed short int *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_SIGNED_INT: {
+          printc(YELLOW, "%s", printType ? "(SIGNED_INT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%d", *((signed int *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_SIGNED_LONG_INT: {
+          printc(YELLOW, "%s", printType ? "(SIGNED_LONG_INT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%ld", *((signed long int *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_SIGNED_LONG_LONG_INT: {
+          printc(YELLOW, "%s", printType ? "(SIGNED_LONG_LONG_INT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%lld", *((signed long long int *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_FLOAT: {
+          printc(YELLOW, "%s", printType ? "(FLOAT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%f", *((float *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_DOUBLE: {
+          printc(YELLOW, "%s", printType ? "(DOUBLE) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%lf", *((double *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_LONG_DOUBLE: {
+          printc(YELLOW, "%s", printType ? "(LONG_DOUBLE) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(BLUE, "%Lf", *((long double *)(kv->value)));
+          break;
+        }
+        case STF_TYPE_STRING: {
+          printc(YELLOW, "%s", printType ? "(STRING) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          printc(GREEN, "\"%s\"", (char *)(kv->value));
+          break;
+        }
+        case STF_TYPE_DICT: {
+          printc(YELLOW, "%s", printType ? "(DICT) " : "");
+          printc(GREEN, "\"%s\": ", kv->key);
+          STF_DICT_PRINTL((STF_DICT *)(kv->value), level + 1, printType);
+          break;
+        }
       }
     }
   }else {
-    printf("NULL");
+    printc(RED, "NULL");
   }
 }
 
@@ -318,24 +428,24 @@ static void STF_PRINT_REPEAT(char * str, int times) {
 }
 
 void STF_DICT_PRINTL(STF_DICT *dict, int level, bool printType) {
-  printf("{\n");
+  printc(WHITE, "{\n");
   if(dict == NULL) {
     STF_PRINT_REPEAT("  ", level + 1);
-    printf("NULL\n");
+    printc(RED, "NULL\n");
   }else if(dict->size == 0) {
     STF_PRINT_REPEAT("  ", level + 1);
-    printf("empty\n");
+    printc(YELLOW, "empty\n");
   }else {
     STF_DICT_ITEM *tmpKv = dict->start;
     for(int i = 0;i < dict->size; i++) {
       _STF_DICT_ITEM_PRINT(tmpKv, level, printType);
       tmpKv = tmpKv->next;
       i != dict->size - 1 && printf(",");
-      printf("\n");
+      printc(WHITE, "\n");
     }
   }
   STF_PRINT_REPEAT("  ", level);
-  printf("}");
+  printc(WHITE, "}");
 }
 
 void STF_DICT_PRINT(STF_DICT *dict) {
