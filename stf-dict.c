@@ -146,7 +146,7 @@ static STF_DICT_ITEM * _STF_DICT_ITEM_CREATE_STRING(char *k, char *s) {
 }
 
 bool _STF_ERROR_UNSUPPORTED_TYPE(STF_DICT *dict, char *k, void *v, char *src) {
-  printc(RED, "\nUNSUPPORTED TYPE [%s] in file: %s, line: %d", src, __FILE__, __LINE__);
+  printc(RED, "\nUNSUPPORTED VALUE TYPE [%s] for the key \"%s\"", src, k);
   exit(1);
 }
 
