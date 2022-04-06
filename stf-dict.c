@@ -25,7 +25,6 @@ void printc(int color, char *output, ...) {
       case 3: printf("\033[1;32m"); break; 
       case 4: printf("\033[1;34m"); break; 
       case 5: printf("\033[1;37m"); break;
-      default: printf("%s", output); break;
     }
     vprintf(output, args);
   #endif
