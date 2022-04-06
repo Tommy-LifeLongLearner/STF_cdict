@@ -588,6 +588,11 @@ bool STF_DICT_REMOVE(STF_DICT *dict, char *k) {
 
   for(int i = 0;i < dict->size; i++) {
     if(strcmp(currentKv->key, k) == 0) {
+      // if the value is a dict then clear its content first
+      if(currentKv->type == STF_TYPE_DICT) {
+        STF_DICT_CLEAR(currentKv->value);
+      }
+      
       if(prevKv == NULL) {
         // start
         prevKv = currentKv->next;

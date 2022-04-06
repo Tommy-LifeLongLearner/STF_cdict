@@ -35,6 +35,7 @@ int main() {
   STF_DICT_PRINTD(person);
   // get the `name`'s value from the dict `person`
   printf("\nThe name is: %s\n", (char *)STF_DICT_GET(person, "name"));
+  STF_DICT_REMOVE(person, "unsigned");
 
   // ordinary print
   STF_DICT_PRINT(person);
