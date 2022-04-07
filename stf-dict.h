@@ -46,6 +46,7 @@ void printc(int color, char *output, ...);
 ///
 ////////////////////////////////////////////////////////////////////////////////
 typedef enum {
+  STF_TYPE_NULL,
   STF_TYPE_BOOL,
   STF_TYPE_UNSIGNED_CHAR,
   STF_TYPE_SIGNED_CHAR,
@@ -173,6 +174,7 @@ static void _STF_DICT_ITEM_PRINT(STF_DICT_ITEM *kv, int level, bool printType);
 static void _STF_DELETE_KV(STF_DICT_ITEM *kv);
 STF_DICT * STF_DICT_CREATE();
 bool STF_DICT_ADD_KV(STF_DICT *dict, STF_DICT_ITEM *kv);
+bool _STF_DICT_ADD_NULL(STF_DICT *dict, char *k, void* v, char *src);
 bool _STF_DICT_ADD_BOOL(STF_DICT *dict, char *k, bool v, char *src);
 bool _STF_DICT_ADD_UNSIGNED_CHAR(STF_DICT *dict, char *k, unsigned char v, char *src);
 bool _STF_DICT_ADD_SIGNED_CHAR(STF_DICT *dict, char *k, signed char v, char *src);
@@ -202,6 +204,7 @@ bool STF_DICT_INCLUDES(STF_DICT *dict, char *k);
 STF_DICT * STF_DICT_COPY(STF_DICT *dict);
 void * STF_DICT_FOREACH(STF_DICT *dict, void* (*cb)(STF_DICT_ITEM *, int));
 static bool _STF_DICT_UPDATE_PRIMITIVE(STF_DICT *dict, char *k, void *nvp, STF_TYPE t);
+bool _STF_DICT_UPDATE_NULL(STF_DICT *dict, char *k, void *v, char *src);
 bool _STF_DICT_UPDATE_BOOL(STF_DICT *dict, char *k, bool v, char *src);
 bool _STF_DICT_UPDATE_UNSIGNED_CHAR(STF_DICT *dict, char *k, unsigned char v, char *src);
 bool _STF_DICT_UPDATE_SIGNED_CHAR(STF_DICT *dict, char *k, signed char v, char *src);

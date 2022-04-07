@@ -1,7 +1,7 @@
 #ifndef __cplusplus /////////////////////////////////////////////////////////////////////
 #include "stf-dict.h"
 
-const char *STF_TYPES[] = {"BOOL", "UNSIGNED_CHAR", "SIGNED_CHAR", "UNSIGNED_SHORT_INT", "UNSIGNED_INT", "UNSIGNED_LONG_INT", "UNSIGNED_LONG_LONG_INT", "SIGNED_SHORT_INT", "SIGNED_INT", "SIGNED_LONG_INT", "SIGNED_LONG_LONG_INT", "FLOAT", "DOUBLE", "LONG_DOUBLE", "STRING", "DICT"};
+const char *STF_TYPES[] = {"NULL", "BOOL", "UNSIGNED_CHAR", "SIGNED_CHAR", "UNSIGNED_SHORT_INT", "UNSIGNED_INT", "UNSIGNED_LONG_INT", "UNSIGNED_LONG_LONG_INT", "SIGNED_SHORT_INT", "SIGNED_INT", "SIGNED_LONG_INT", "SIGNED_LONG_LONG_INT", "FLOAT", "DOUBLE", "LONG_DOUBLE", "STRING", "DICT"};
 
 void printc(int color, char *output, ...) {    
   va_list args;
@@ -145,15 +145,10 @@ static STF_DICT_ITEM * _STF_DICT_ITEM_CREATE_STRING(char *k, char *s) {
   return p;
 }
 
-bool _STF_ERROR_UNSUPPORTED_TYPE(STF_DICT *dict, char *k, void *v, char *src) {
-  printc(RED, "\nUNSUPPORTED VALUE TYPE [%s] for the key \"%s\"", src, k);
-  exit(1);
-}
-
 static void _STF_DICT_ITEM_PRINT(STF_DICT_ITEM *kv, int level, bool printType) {
   STF_PRINT_REPEAT("  ", level + 1);
   if(kv != NULL) {
-    if(kv->value == NULL) {
+    if(kv->value == NULL && kv->type != STF_TYPE_NULL) {
       printc(GREEN, "\"%s\": ", kv->key);
       printc(RED, "NULL");
     }else {
@@ -162,6 +157,7 @@ static void _STF_DICT_ITEM_PRINT(STF_DICT_ITEM *kv, int level, bool printType) {
       }
       printc(GREEN, "\"%s\": ", kv->key);
       switch(kv->type) {
+        case STF_TYPE_NULL: printc(RED, "NULL"); break;
         case STF_TYPE_BOOL: printc(RED, "%s", *((bool *)(kv->value)) ? "true" : "false"); break;
         case STF_TYPE_UNSIGNED_CHAR: printc(YELLOW, "'%c'", *((unsigned char *)(kv->value))); break;
         case STF_TYPE_SIGNED_CHAR: printc(YELLOW, "'%c'", *((signed char *)(kv->value))); break;
@@ -216,6 +212,10 @@ bool STF_DICT_ADD_KV(STF_DICT *dict, STF_DICT_ITEM *kv) {
   }
   dict->size++;
   return true;
+}
+
+bool _STF_DICT_ADD_NULL(STF_DICT *dict, char *k, void* v, char *src) {
+  return STF_DICT_ADD_KV(dict, _STF_DICT_ITEM_CREATE_PRIMITIVE(k, v, STF_TYPE_NULL));
 }
 
 bool _STF_DICT_ADD_BOOL(STF_DICT *dict, char *k, bool v, char *src) {
@@ -446,6 +446,10 @@ static bool _STF_DICT_UPDATE_PRIMITIVE(STF_DICT *dict, char *k, void *nvp, STF_T
   return keyExists;
 }
 
+bool _STF_DICT_UPDATE_NULL(STF_DICT *dict, char *k, void *v, char *src) {
+  return _STF_DICT_UPDATE_PRIMITIVE(dict, k, v, STF_TYPE_NULL);
+}
+
 bool _STF_DICT_UPDATE_BOOL(STF_DICT *dict, char *k, bool v, char *src) {
   bool *nvp = malloc(sizeof(bool));
   *nvp = v;
@@ -592,7 +596,7 @@ bool STF_DICT_REMOVE(STF_DICT *dict, char *k) {
       if(currentKv->type == STF_TYPE_DICT) {
         STF_DICT_CLEAR(currentKv->value);
       }
-      
+
       if(prevKv == NULL) {
         // start
         prevKv = currentKv->next;
@@ -617,6 +621,19 @@ bool STF_DICT_REMOVE(STF_DICT *dict, char *k) {
     currentKv = currentKv->next;
   }
   return false;
+}
+
+bool _STF_ERROR_UNSUPPORTED_TYPE(STF_DICT *dict, char *k, void *v, char *src) {
+  if(strcmp(src, "NULL") == 0 || strcmp(src, "((void *)0)") == 0) {
+    if(STF_DICT_INCLUDES(dict, k)) {
+      _STF_DICT_UPDATE_NULL(dict, k, v, src);
+    }else {
+      _STF_DICT_ADD_NULL(dict, k, v, src);
+    }
+  }else {
+    printc(RED, "\nUNSUPPORTED VALUE TYPE [%s] for the key \"%s\"", src, k);
+    exit(1);
+  }
 }
 
 #endif ////////////////////////////////////////////////////////////////////////
