@@ -320,6 +320,7 @@ static STF_DICT_ITEM * _STF_DICT_ITEM_COPY(STF_DICT_ITEM *kv) {
     case STF_TYPE_DOUBLE: kvCopy = _STF_DICT_ITEM_CREATE_DOUBLE(kv->key, *((double *)(kv->value))); break;
     case STF_TYPE_LONG_DOUBLE: kvCopy = _STF_DICT_ITEM_CREATE_LONG_DOUBLE(kv->key, *((long double *)(kv->value))); break;
     case STF_TYPE_STRING: kvCopy = _STF_DICT_ITEM_CREATE_STRING(kv->key, (char *)(kv->value)); break;
+    case STF_TYPE_DICT: kvCopy = _STF_DICT_ITEM_CREATE_PRIMITIVE(kv->key, STF_DICT_COPY(kv->value), STF_TYPE_DICT); break;
   }
   return kvCopy;
 }

@@ -15,6 +15,9 @@ int main() {
   STF_DICT_ADD(person, "lucky character", 'T');
   STF_DICT_ADD(person, "other character", (signed char)'B');
   STF_DICT_ADD(num2, "floats", num3);
+
+  STF_DICT *personCopy = STF_DICT_COPY(person);
+  
   STF_DICT_ADD(num1, "c1", (unsigned short int)12);
   STF_DICT_ADD(num1, "c2", (unsigned int)15);
   STF_DICT_ADD(num2, "c3", (unsigned long int)19);
@@ -31,15 +34,19 @@ int main() {
   STF_DICT_UPDATE(num1, "c7", (unsigned long int)19);
   STF_DICT_UPDATE(num1, "c8", (unsigned long long int)23);
 
+  STF_DICT_PRINTD(personCopy);
+
   // debug print (shows types)
   STF_DICT_PRINTD(person);
   // get the `name`'s value from the dict `person`
   printf("\nThe name is: %s\n", (char *)STF_DICT_GET(person, "name"));
+  STF_DICT_ADD(person, "name", NULL);
   STF_DICT_REMOVE(person, "unsigned");
 
   // ordinary print
   STF_DICT_PRINT(person);
 
   STF_DELETE_DICT(person);
+  STF_DELETE_DICT(personCopy);
   return 0;
 }
