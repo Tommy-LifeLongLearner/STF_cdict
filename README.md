@@ -1,63 +1,76 @@
-# STF C Dictionaries
+# C Dictionaries
 
 ## Introduction
 
-This is a simple library for creating and manipulating dictionaries in **c** using linked lists of structs
+This is a single linked list of structs library for creating and manipulating dictionaries in **c**
 
 ## Usage
 
-Include the `stf-dict.h` header file
+Include the `c_dict.h` header file
 ```c
-#include "stf-dict.h"
+#include "c_dict.h"
 ```
-Then create some dicts and manipulate them
+Create for example a file `test.c`, then create some dicts and add some data
+
+**test.c**
 ```c
-STF_DICT *dict = STF_DICT_CREATE();
-STF_DICT_PRINT(dict);
-STF_DELETE_DICT(dict);
-```
-Output (empty dict)
-```txt
-{
-  empty
-}
-```
-Add some key value pairs
-```c
-  STF_DICT *dict = STF_DICT_CREATE();
-  STF_DICT_ADD(dict, "name", "Saadi Toumi Fouad");
-  STF_DICT_ADD(dict, "age", 29);
-  STF_DICT_ADD(dict, "country", "Algeria");
-  STF_DICT_PRINT(dict);
-  STF_DELETE_DICT(dict);
-```
-Output
-```txt
-{
-  "name": "Saadi Toumi Fouad",
-  "age": 29,
-  "country": "Algeria"
+#include "c_dict.h"
+
+int main() {
+  DICT *person = DICT_CREATE(); // create a new empty dict
+  DICT *pl = DICT_CREATE();
+  DICT_ADD(person, "name", "Saadi Toumi Fouad"); // add a key, value pair
+  DICT_ADD(person, "year of birth", 1993); 
+  DICT_ADD(person, "country", "Algeria");
+  DICT_ADD(person, "programming languages", pl);
+  DICT_ADD(person, "is married", true);
+  DICT_ADD(person, "kids", NULL);
+  DICT_ADD(person, "lucky character", 'T');
+  DICT_ADD(pl, "C", 65.9);
+  DICT_ADD(pl, "C++", 45.3f);
+  DICT_ADD(pl, "C#", 34.7l);
+  DICT_ADD(pl, "Java", 27.3f);
+  DICT_ADD(pl, "JavaScript", 73.8);
+  DICT_ADD(pl, "Python", 34.2f);
+  DICT_ADD(pl, "PHP", 17l);
+  DICT_PRINT(person); // print the content of the dict
+  DICT_PRINTD(person); // print the content of the dict plus each value type
+  DICT_DELETE(person); // clear the items and free the dict memory
+  return 0;
 }
 ```
 
-## Supported types:
+Compile and link for example using **gcc**:
+```
+gcc -c c_dict.c -o c_dict.o
+gcc test.c -o test c_dict.o 
+```
+
+Run the executable so you get the output
+**Ordinary print (DICT_PRINT)**
+![](C:\Users\STF\Desktop\c_dict\img\img1.png)
+**Type print (DICT_PRINTD)**
+![](C:\Users\STF\Desktop\c_dict\img\img2.png)
+
+## Supported types as values:
 ```c
-bool as STF_TYPE_BOOL
-char as STF_TYPE_UNSIGNED_CHAR
-signed char as STF_TYPE_SIGNED_CHAR
-unsigned short int as STF_TYPE_UNSIGNED_SHORT_INT
-unsigned int as STF_TYPE_UNSIGNED_INT
-unsigned long int as STF_TYPE_UNSIGNED_LONG_INT
-unsigned long long_int as STF_TYPE_UNSIGNED_LONG_LONG_INT
-signed short int as STF_TYPE_SIGNED_SHORT_INT
-signed int as STF_TYPE_SIGNED_INT
-signed long_int as STF_TYPE_SIGNED_LONG_INT
-signed long long int as STF_TYPE_SIGNED_LONG_LONG_INT
-float as STF_TYPE_FLOAT
-double as STF_TYPE_DOUBLE
-long double as STF_TYPE_LONG_DOUBLE
-string as STF_TYPE_STRING
-dict as STF_TYPE_DICT
+NULL
+bool
+unsigned char
+signed char
+unsigned short int
+unsigned int
+unsigned long int
+unsigned long long int
+signed short int
+signed int
+signed long int
+signed long long int
+float 
+double
+long double
+char *
+DICT
 ```
 
 ## Implementation:
@@ -69,10 +82,10 @@ dict as STF_TYPE_DICT
 ///
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct {
-  STF_DICT_ITEM *start;
-  STF_DICT_ITEM *end;
+  DICT_ITEM *start;
+  DICT_ITEM *end;
   int size;
-} STF_DICT;
+} DICT;
 ```
 * **Dict Item**(key value pairs)
 ```c
@@ -81,28 +94,14 @@ typedef struct {
 /// name as `key` and the address of the next pair as (KV)
 ///
 ////////////////////////////////////////////////////////////////////////////////
-typedef struct STF_DICT_ITEM {
-  STF_TYPE type;
+typedef struct DICT_ITEM {
+  VALUE_TYPE type;
   char *key;
   void *value;
-  struct STF_DICT_ITEM *next;
-} STF_DICT_ITEM;
+  struct DICT_ITEM *next;
+} DICT_ITEM;
 ```
-
-## Extend the library with your types
-
-To add custom types you should alter the library following these steps:
-
-1) add the function `_STF_DICT_ITEM_CREATE_YOURTYPE(char *k, YOURTYPE v)`
-2) add a case to print your type in the function `_STF_DICT_ITEM_PRINT`
-3) add a case to copy your type in the function `_STF_DICT_ITEM_COPY(STF_DICT_ITEM *kv)`
-4) add the function `_STF_DICT_ADD_YOURTYPE(STF_DICT *dict, char *k, YOURTYPE v, char *src)`
-5) add the function `_STF_DICT_UPDATE_YOURTYPE(STF_DICT *dict, char *k, YOURTYPE v, char *src)`
-6) add the type match inside the macro `STF_DICT_ITEM_CREATE(k, v)`
-7) add the type match inside the macro `STF_DICT_ADD(dict, k, v)`
-8) add the type match inside the macro `STF_DICT_UPDATE(dict, k, v)`
-9) add your type as an `STF_TYPE` enum item
 
 ## Documentation
 
-For more infos checkout the [Docs](https://github.com/Tommy-LifeLongLearner/STF_cdict/wiki)
+For more infos checkout the **[Docs](https://github.com/Tommy-LifeLongLearner/c_dict/wiki/Documentation)** 
