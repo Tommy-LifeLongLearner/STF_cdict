@@ -47,10 +47,10 @@ gcc test.c -o test c_dict.o
 ```
 
 Run the executable so you get the output
-**Ordinary print (DICT_PRINT)**
-![](C:\Users\STF\Desktop\c_dict\img\img1.png)
-**Type print (DICT_PRINTD)**
-![](C:\Users\STF\Desktop\c_dict\img\img2.png)
+
+![100](img/img1.png)
+
+![100](img/img2.png)
 
 ## Supported types as values:
 ```c
