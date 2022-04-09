@@ -537,7 +537,7 @@ bool _DICT_UPDATE_DOUBLE(DICT *dict, char *k, double v, char *src) {
 bool _DICT_UPDATE_LONG_DOUBLE(DICT *dict, char *k, long double v, char *src) {
   long double *nvp = malloc(sizeof(long double));
   *nvp = v;
-  return _DICT_UPDATE_PRIMITIVE(dict, k, nvp, VALUE_TYPE_DOUBLE);
+  return _DICT_UPDATE_PRIMITIVE(dict, k, nvp, VALUE_TYPE_LONG_DOUBLE);
 }
 
 bool _DICT_UPDATE_STRING(DICT *dict, char *k, char* v, char *src) {
