@@ -293,7 +293,7 @@ static void _DICT_ITEM_PRINT(DICT_ITEM *kv, int level, bool printType) {
   }
 }
 
-static void _LIST_ITEM_PRINT(LIST_ITEM *item, bool printType) {
+static void _LIST_ITEM_PRINT(LIST_ITEM *item, int level, bool printType) {
   if(item != NULL) {
     if(item->value == NULL && item->type != VALUE_TYPE_NULL) {
       printc(RED, "NULL");
@@ -318,7 +318,8 @@ static void _LIST_ITEM_PRINT(LIST_ITEM *item, bool printType) {
         case VALUE_TYPE_DOUBLE: printc(BLUE, "%lf", *((double *)(item->value))); break;
         case VALUE_TYPE_LONG_DOUBLE: printc(BLUE, "%Lf", *((long double *)(item->value))); break;
         case VALUE_TYPE_STRING: printc(GREEN, "\"%s\"", (char *)(item->value)); break;
-        case VALUE_TYPE_LIST: LIST_PRINTL((LIST *)(item->value), printType); break;
+        case VALUE_TYPE_LIST: LIST_PRINTL((LIST *)(item->value), 0, printType); break;
+        case VALUE_TYPE_DICT: DICT_PRINTL((DICT *)(item->value), level + 1, printType); break;
       }
     }
   }else {
@@ -340,6 +341,8 @@ static void _DELETE_ITEM(LIST_ITEM *item) {
   if(item->value != NULL) {
     if(item->type == VALUE_TYPE_LIST) {
       LIST_CLEAR((LIST *)(item->value));
+    }else if(item->type == VALUE_TYPE_DICT) {
+      DICT_CLEAR((DICT *)(item->value));
     }
     free(item->value);
   }
@@ -551,12 +554,26 @@ static LIST_ITEM * _LIST_ITEM_CREATE_LIST(LIST *newList) {
   return p;
 }
 
+static LIST_ITEM * _LIST_ITEM_CREATE_DICT(DICT *newDict) {
+  LIST_ITEM *p = malloc(sizeof(LIST_ITEM));
+  if(p != NULL) {
+    p->value = newDict;
+    p->type = VALUE_TYPE_DICT;
+    p->next = NULL;
+  }
+  return p;
+}
+
 bool _DICT_ADD_DICT(DICT *dict, char *k, DICT *newDict, char *src) {
   return newDict && DICT_ADD_KV(dict, _DICT_ITEM_CREATE_DICT(k, newDict));
 }
 
 bool _LIST_ADD_LIST(LIST *list, LIST *newList, char *src) {
   return newList && LIST_ADD_ITEM(list, _LIST_ITEM_CREATE_LIST(newList));
+}
+
+bool _LIST_ADD_DICT(LIST *list, DICT *dict, char *src) {
+  return dict && LIST_ADD_ITEM(list, _LIST_ITEM_CREATE_DICT(dict));
 }
 
 static DICT_ITEM * _DICT_ITEM_COPY(DICT_ITEM *kv) {
@@ -609,6 +626,7 @@ static LIST_ITEM * _LIST_ITEM_COPY(LIST_ITEM *item) {
     case VALUE_TYPE_LONG_DOUBLE: itemCopy = _LIST_ITEM_CREATE_LONG_DOUBLE(*((long double *)(item->value))); break;
     case VALUE_TYPE_STRING: itemCopy = _LIST_ITEM_CREATE_STRING((char *)(item->value)); break;
     case VALUE_TYPE_LIST: itemCopy = _LIST_ITEM_CREATE_PRIMITIVE(LIST_COPY(item->value), VALUE_TYPE_LIST); break;
+    case VALUE_TYPE_DICT: itemCopy = _LIST_ITEM_CREATE_PRIMITIVE(DICT_COPY(item->value), VALUE_TYPE_DICT); break;
   }
   return itemCopy;
 }
@@ -684,14 +702,14 @@ void DICT_PRINTL(DICT *dict, int level, bool printType) {
   printc(WHITE, "}");
 }
 
-void LIST_PRINTL(LIST *list, bool printType) {
+void LIST_PRINTL(LIST *list, int level, bool printType) {
   printc(WHITE, "[");
   if(list == NULL) {
     printc(RED, "NULL");
   }else if(list->size > 0) {
     LIST_ITEM *tmpItem = list->start;
     for(int i = 0;i < list->size; i++) {
-      _LIST_ITEM_PRINT(tmpItem, printType);
+      _LIST_ITEM_PRINT(tmpItem, level, printType);
       tmpItem = tmpItem->next;
       i != list->size - 1 && printf(",");
     }
@@ -704,7 +722,7 @@ void DICT_PRINT(DICT *dict) {
 }
 
 void LIST_PRINT(LIST *list) {
-  LIST_PRINTL(list, false);
+  LIST_PRINTL(list, 0, false);
 }
 
 void DICT_PRINTD(DICT *dict) {
@@ -712,7 +730,7 @@ void DICT_PRINTD(DICT *dict) {
 }
 
 void LIST_PRINTD(LIST *list) {
-  LIST_PRINTL(list, true);
+  LIST_PRINTL(list, 0, true);
 }
 
 void * DICT_GET(DICT *dict, char *k) {
@@ -751,7 +769,6 @@ static bool _LIST_INCLUDES_PRIMITIVE(LIST *list, void *nvp, VALUE_TYPE t) {
   bool valueExists = false;
   for(int i = 0;i < list->size; i++) {
     if(t == tmpItem->type) {
-      printf("%d", x++);
       switch(tmpItem->type) {
         case VALUE_TYPE_NULL: {
           valueExists = true;
@@ -833,6 +850,10 @@ static bool _LIST_INCLUDES_PRIMITIVE(LIST *list, void *nvp, VALUE_TYPE t) {
       return true;
     }
     tmpItem = tmpItem->next;
+  }
+  if(!valueExists) {
+    free(nvp);
+    return false;
   }
 }
 
@@ -1025,6 +1046,8 @@ static bool _LIST_UPDATE_PRIMITIVE(LIST *list, int index, void *nvp, VALUE_TYPE 
       indexExists = true;
       if(tmpItem->type == VALUE_TYPE_LIST) {
         LIST_CLEAR(tmpItem->value);
+      }else if(tmpItem->type == VALUE_TYPE_DICT) {
+        DICT_CLEAR(tmpItem->value);
       }
       free(tmpItem->value);
       tmpItem->value = nvp;
@@ -1260,6 +1283,8 @@ bool _LIST_UPDATE_STRING(LIST *list, int index, char* v, char *src) {
       indexExists = true;
       if(tmpItem->type == VALUE_TYPE_LIST) {
         LIST_CLEAR(tmpItem->value);
+      }else if(tmpItem->type == VALUE_TYPE_DICT) {
+        DICT_CLEAR(tmpItem->value);
       }
       free(tmpItem->value);
       char *sc;
@@ -1306,10 +1331,33 @@ bool _LIST_UPDATE_LIST(LIST *list, int index, LIST *newItem, char *src) {
       indexExists = true;
       if(tmpItem->type == VALUE_TYPE_LIST) {
         LIST_CLEAR(tmpItem->value);
+      }else if(tmpItem->type == VALUE_TYPE_DICT) {
+        DICT_CLEAR(tmpItem->value);
       }
       free(tmpItem->value);
       tmpItem->value = (void *)newItem;
       tmpItem->type = VALUE_TYPE_LIST;
+      break;
+    }
+    tmpItem = tmpItem->next;
+  }
+  return indexExists;
+}
+
+bool _LIST_UPDATE_DICT(LIST *list, int index, DICT *newDICT, char *src) {
+  LIST_ITEM *tmpItem = list->start;
+  bool indexExists = false;
+  for(int i = 0;i < list->size; i++) {
+    if(index == i) {
+      indexExists = true;
+      if(tmpItem->type == VALUE_TYPE_LIST) {
+        LIST_CLEAR(tmpItem->value);
+      }else if(tmpItem->type == VALUE_TYPE_DICT) {
+        DICT_CLEAR(tmpItem->value);
+      }
+      free(tmpItem->value);
+      tmpItem->value = (void *)newDICT;
+      tmpItem->type = VALUE_TYPE_DICT;
       break;
     }
     tmpItem = tmpItem->next;
@@ -1365,6 +1413,8 @@ bool LIST_REMOVE(LIST *list, int index) {
       // if the value is a list then clear its content first
       if(currentItem->type == VALUE_TYPE_LIST) {
         LIST_CLEAR(currentItem->value);
+      }else if(currentItem->type == VALUE_TYPE_DICT) {
+        DICT_CLEAR(currentItem->value);
       }
 
       if(prevItem == NULL) {

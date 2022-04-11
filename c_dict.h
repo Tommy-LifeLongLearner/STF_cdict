@@ -184,6 +184,7 @@ typedef struct {
   long double: _LIST_ADD_LONG_DOUBLE, \
   char *: _LIST_ADD_STRING, \
   LIST *: _LIST_ADD_LIST, \
+  DICT *: _LIST_ADD_DICT, \
   default: _LIST_ADD_ERROR_UNSUPPORTED_TYPE)(list, v, #v)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -237,6 +238,7 @@ typedef struct {
   long double: _LIST_UPDATE_LONG_DOUBLE, \
   char *: _LIST_UPDATE_STRING, \
   LIST *: _LIST_UPDATE_LIST, \
+  DICT *: _LIST_UPDATE_DICT, \
   default: _LIST_UPDATE_ERROR_UNSUPPORTED_TYPE)(list, index, v, #v)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -300,7 +302,7 @@ bool _DICT_ERROR_UNSUPPORTED_TYPE(DICT *dict, char *k, void *v, char *src);
 bool _LIST_ADD_ERROR_UNSUPPORTED_TYPE(LIST *list, void *v, char *src);
 bool _LIST_UPDATE_ERROR_UNSUPPORTED_TYPE(LIST *list, int index, void *v, char *src);
 static void _DICT_ITEM_PRINT(DICT_ITEM *kv, int level, bool printType);
-static void _LIST_ITEM_PRINT(LIST_ITEM *item, bool printType);
+static void _LIST_ITEM_PRINT(LIST_ITEM *item, int level, bool printType);
 static void _DELETE_KV(DICT_ITEM *kv);
 static void _DELETE_ITEM(LIST_ITEM *item);
 DICT * DICT_CREATE();
@@ -341,8 +343,10 @@ bool _DICT_ADD_STRING(DICT *dict, char *k, char* v, char *src);
 bool _LIST_ADD_STRING(LIST *list, char* v, char *src);
 static DICT_ITEM * _DICT_ITEM_CREATE_DICT(char *k, DICT *newDict);
 static LIST_ITEM * _LIST_ITEM_CREATE_LIST(LIST *newList);
+static LIST_ITEM * _LIST_ITEM_CREATE_DICT(DICT *newDict);
 bool _DICT_ADD_DICT(DICT *dict, char *k, DICT *newDict, char *src);
 bool _LIST_ADD_LIST(LIST *list, LIST *newList, char *src);
+bool _LIST_ADD_DICT(LIST *list, DICT *dict, char *src);
 static DICT_ITEM * _DICT_ITEM_COPY(DICT_ITEM *kv);
 static LIST_ITEM * _LIST_ITEM_COPY(LIST_ITEM *item);
 static void _DICT_SHIFT(DICT *dict);
@@ -351,7 +355,7 @@ void DICT_CLEAR(DICT *dict);
 void LIST_CLEAR(LIST *list);
 static void PRINT_REPEAT(char * str, int times);
 void DICT_PRINTL(DICT *dict, int level, bool printType);
-void LIST_PRINTL(LIST *list, bool printType);
+void LIST_PRINTL(LIST *list, int level, bool printType);
 void DICT_PRINT(DICT *dict);
 void LIST_PRINT(LIST *list);
 void DICT_PRINTD(DICT *dict);
@@ -417,6 +421,7 @@ bool _DICT_UPDATE_STRING(DICT *dict, char *k, char* v, char *src);
 bool _LIST_UPDATE_STRING(LIST *list, int index, char* v, char *src);
 bool _DICT_UPDATE_DICT(DICT *dict, char *k, DICT *newDict, char *src);
 bool _LIST_UPDATE_LIST(LIST *list, int index, LIST *newItem, char *src);
+bool _LIST_UPDATE_DICT(LIST *list, int index, DICT *newDICT, char *src);
 bool DICT_REMOVE(DICT *dict, char *k);
 bool LIST_REMOVE(LIST *list, int index);
 
