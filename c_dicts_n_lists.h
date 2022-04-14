@@ -1,15 +1,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// C_Dict - simple library to create and manipulate dictionaries
+// C_Dict - simple library to create and manipulate dictionaries and lists
 // Copyright (C) 2022 Saadi Toumi Fouad (saaditoumifouad@gmail.com)
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef __cplusplus
   #error "This library is for c, not meant to be used with c++!";
+  NO_WAY_JUST_FOR_C! // lol
 #else
-  #ifndef DICT_H
-  #define DICT_H
+  #ifndef DICTS_N_LISTS_H
+  #define DICTS_N_LISTS_H
   #define __USE_MINGW_ANSI_STDIO 1
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -431,5 +432,5 @@ bool _LIST_UPDATE_DICT(LIST *list, int index, DICT *newDICT, char *src);
 bool DICT_REMOVE(DICT *dict, char *k);
 bool LIST_REMOVE(LIST *list, int index);
 
-  #endif //DICT_H
+  #endif //DICTS_N_LISTS_H
 #endif

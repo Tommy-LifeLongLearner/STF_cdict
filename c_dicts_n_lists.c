@@ -1,5 +1,5 @@
 #ifndef __cplusplus /////////////////////////////////////////////////////////////////////
-#include "c_dict.h"
+#include "c_dicts_n_lists.h"
 
 const char *C_TYPES[] = {"NULL", "BOOL", "UNSIGNED_CHAR", "SIGNED_CHAR", "UNSIGNED_SHORT_INT", "UNSIGNED_INT", "UNSIGNED_LONG_INT", "UNSIGNED_LONG_LONG_INT", "SIGNED_SHORT_INT", "SIGNED_INT", "SIGNED_LONG_INT", "SIGNED_LONG_LONG_INT", "FLOAT", "DOUBLE", "LONG_DOUBLE", "STRING", "DICT", "LIST"};
 
@@ -228,7 +228,6 @@ static DICT_ITEM * _DICT_ITEM_CREATE_STRING(char *k, char *s) {
       sc = malloc(strlen(s) + 1);
       if(sc != NULL) {
         strcpy(sc, s);
-        sc[strlen(s)] = '\0';
       }
     }
     p->value = (void *)sc;
@@ -247,7 +246,6 @@ static LIST_ITEM * _LIST_ITEM_CREATE_STRING(char *s) {
       sc = malloc(strlen(s) + 1);
       if(sc != NULL) {
         strcpy(sc, s);
-        sc[strlen(s)] = '\0';
       }
     }
     p->value = (void *)sc;
@@ -1283,7 +1281,6 @@ bool _DICT_UPDATE_STRING(DICT *dict, char *k, char* v, char *src) {
       }
       if(sc != NULL) {
         strcpy(sc, v);
-        sc[strlen(v)] = '\0';
       }
       tmpKv->value = (void *)sc;
       tmpKv->type = VALUE_TYPE_STRING;
@@ -1312,7 +1309,6 @@ bool _LIST_UPDATE_STRING(LIST *list, int index, char* v, char *src) {
       }
       if(sc != NULL) {
         strcpy(sc, v);
-        sc[strlen(v)] = '\0';
       }
       tmpItem->value = (void *)sc;
       tmpItem->type = VALUE_TYPE_STRING;
