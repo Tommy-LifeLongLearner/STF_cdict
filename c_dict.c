@@ -319,7 +319,7 @@ static void _LIST_ITEM_PRINT(LIST_ITEM *item, int level, bool printType) {
         case VALUE_TYPE_LONG_DOUBLE: printc(BLUE, "%Lf", *((long double *)(item->value))); break;
         case VALUE_TYPE_STRING: printc(GREEN, "\"%s\"", (char *)(item->value)); break;
         case VALUE_TYPE_LIST: LIST_PRINTL((LIST *)(item->value), 0, printType); break;
-        case VALUE_TYPE_DICT: DICT_PRINTL((DICT *)(item->value), level + 1, printType); break;
+        case VALUE_TYPE_DICT: DICT_PRINTL((DICT *)(item->value), level + 0, printType); break;
       }
     }
   }else {
