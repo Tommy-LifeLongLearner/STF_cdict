@@ -10,6 +10,7 @@
 #else
   #ifndef DICT_H
   #define DICT_H
+  #define __USE_MINGW_ANSI_STDIO 1
 
 ////////////////////////////////////////////////////////////////////////////////
 // Headers
@@ -158,6 +159,7 @@ typedef struct {
   long double: _DICT_ADD_LONG_DOUBLE, \
   char *: _DICT_ADD_STRING, \
   DICT *: _DICT_ADD_DICT, \
+  LIST *: _DICT_ADD_LIST, \
   default: _DICT_ERROR_UNSUPPORTED_TYPE)(dict, k, v, #v)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,6 +214,7 @@ typedef struct {
   long double: _DICT_UPDATE_LONG_DOUBLE, \
   char *: _DICT_UPDATE_STRING, \
   DICT *: _DICT_UPDATE_DICT, \
+  LIST *: _DICT_UPDATE_LIST, \
   default: _DICT_ERROR_UNSUPPORTED_TYPE)(dict, k, v, #v)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -342,9 +345,11 @@ bool _LIST_ADD_LONG_DOUBLE(LIST *list, long double v, char *src);
 bool _DICT_ADD_STRING(DICT *dict, char *k, char* v, char *src);
 bool _LIST_ADD_STRING(LIST *list, char* v, char *src);
 static DICT_ITEM * _DICT_ITEM_CREATE_DICT(char *k, DICT *newDict);
+static DICT_ITEM * _DICT_ITEM_CREATE_LIST(char *k, LIST *newList);
 static LIST_ITEM * _LIST_ITEM_CREATE_LIST(LIST *newList);
 static LIST_ITEM * _LIST_ITEM_CREATE_DICT(DICT *newDict);
 bool _DICT_ADD_DICT(DICT *dict, char *k, DICT *newDict, char *src);
+bool _DICT_ADD_LIST(DICT *dict, char *k, LIST *newList, char *src);
 bool _LIST_ADD_LIST(LIST *list, LIST *newList, char *src);
 bool _LIST_ADD_DICT(LIST *list, DICT *dict, char *src);
 static DICT_ITEM * _DICT_ITEM_COPY(DICT_ITEM *kv);
@@ -420,6 +425,7 @@ bool _LIST_UPDATE_LONG_DOUBLE(LIST *list, int index, long double v, char *src);
 bool _DICT_UPDATE_STRING(DICT *dict, char *k, char* v, char *src);
 bool _LIST_UPDATE_STRING(LIST *list, int index, char* v, char *src);
 bool _DICT_UPDATE_DICT(DICT *dict, char *k, DICT *newDict, char *src);
+bool _DICT_UPDATE_LIST(DICT *dict, char *k, LIST *newList, char *src);
 bool _LIST_UPDATE_LIST(LIST *list, int index, LIST *newItem, char *src);
 bool _LIST_UPDATE_DICT(LIST *list, int index, DICT *newDICT, char *src);
 bool DICT_REMOVE(DICT *dict, char *k);

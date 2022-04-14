@@ -286,6 +286,7 @@ static void _DICT_ITEM_PRINT(DICT_ITEM *kv, int level, bool printType) {
         case VALUE_TYPE_LONG_DOUBLE: printc(BLUE, "%Lf", *((long double *)(kv->value))); break;
         case VALUE_TYPE_STRING: printc(GREEN, "\"%s\"", (char *)(kv->value)); break;
         case VALUE_TYPE_DICT: DICT_PRINTL((DICT *)(kv->value), level + 1, printType); break;
+        case VALUE_TYPE_LIST: LIST_PRINTL((LIST *)(kv->value), level + 0, printType); break;
       }
     }
   }else {
@@ -331,6 +332,8 @@ static void _DELETE_KV(DICT_ITEM *kv) {
   if(kv->value != NULL) {
     if(kv->type == VALUE_TYPE_DICT) {
       DICT_CLEAR((DICT *)(kv->value));
+    }else if(kv->type == VALUE_TYPE_LIST) {
+      LIST_CLEAR((LIST *)(kv->value));
     }
     free(kv->value);
   }
@@ -544,6 +547,17 @@ static DICT_ITEM * _DICT_ITEM_CREATE_DICT(char *k, DICT *newDict) {
   return p;
 }
 
+static DICT_ITEM * _DICT_ITEM_CREATE_LIST(char *k, LIST *newList) {
+  DICT_ITEM *p = malloc(sizeof(DICT_ITEM));
+  if(p != NULL) {
+    p->value = newList;
+    p->type = VALUE_TYPE_LIST;
+    p->key = k;
+    p->next = NULL;
+  }
+  return p;
+}
+
 static LIST_ITEM * _LIST_ITEM_CREATE_LIST(LIST *newList) {
   LIST_ITEM *p = malloc(sizeof(LIST_ITEM));
   if(p != NULL) {
@@ -566,6 +580,10 @@ static LIST_ITEM * _LIST_ITEM_CREATE_DICT(DICT *newDict) {
 
 bool _DICT_ADD_DICT(DICT *dict, char *k, DICT *newDict, char *src) {
   return newDict && DICT_ADD_KV(dict, _DICT_ITEM_CREATE_DICT(k, newDict));
+}
+
+bool _DICT_ADD_LIST(DICT *dict, char *k, LIST *newList, char *src) {
+  return newList && DICT_ADD_KV(dict, _DICT_ITEM_CREATE_LIST(k, newList));
 }
 
 bool _LIST_ADD_LIST(LIST *list, LIST *newList, char *src) {
@@ -599,6 +617,7 @@ static DICT_ITEM * _DICT_ITEM_COPY(DICT_ITEM *kv) {
     case VALUE_TYPE_LONG_DOUBLE: kvCopy = _DICT_ITEM_CREATE_LONG_DOUBLE(kv->key, *((long double *)(kv->value))); break;
     case VALUE_TYPE_STRING: kvCopy = _DICT_ITEM_CREATE_STRING(kv->key, (char *)(kv->value)); break;
     case VALUE_TYPE_DICT: kvCopy = _DICT_ITEM_CREATE_PRIMITIVE(kv->key, DICT_COPY(kv->value), VALUE_TYPE_DICT); break;
+    case VALUE_TYPE_LIST: kvCopy = _DICT_ITEM_CREATE_PRIMITIVE(kv->key, LIST_COPY(kv->value), VALUE_TYPE_LIST); break;
   }
   return kvCopy;
 }
@@ -1323,6 +1342,25 @@ bool _DICT_UPDATE_DICT(DICT *dict, char *k, DICT *newDict, char *src) {
   return keyExists;
 }
 
+bool _DICT_UPDATE_LIST(DICT *dict, char *k, LIST *newList, char *src) {
+  DICT_ITEM *tmpKv = dict->start;
+  bool keyExists = false;
+  for(int i = 0;i < dict->size; i++) {
+    if(strcmp(tmpKv->key, k) == 0) {
+      keyExists = true;
+      if(tmpKv->type == VALUE_TYPE_DICT) {
+        DICT_CLEAR(tmpKv->value);
+      }
+      free(tmpKv->value);
+      tmpKv->value = (void *)newList;
+      tmpKv->type = VALUE_TYPE_LIST;
+      break;
+    }
+    tmpKv = tmpKv->next;
+  }
+  return keyExists;
+}
+
 bool _LIST_UPDATE_LIST(LIST *list, int index, LIST *newItem, char *src) {
   LIST_ITEM *tmpItem = list->start;
   bool indexExists = false;
@@ -1375,6 +1413,8 @@ bool DICT_REMOVE(DICT *dict, char *k) {
       // if the value is a dict then clear its content first
       if(currentKv->type == VALUE_TYPE_DICT) {
         DICT_CLEAR(currentKv->value);
+      }else if(currentKv->type == VALUE_TYPE_LIST) {
+        LIST_CLEAR(currentKv->value);
       }
 
       if(prevKv == NULL) {
